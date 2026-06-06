@@ -30,7 +30,7 @@ sync.
 Add the input:
 
 ```nix
-inputs.but.url = "git+ssh://git@github.com/data-cartel/but.nix.git";
+inputs.but.url = "github:data-cartel/but.nix";
 inputs.but.inputs.nixpkgs.follows = "nixpkgs";
 ```
 
