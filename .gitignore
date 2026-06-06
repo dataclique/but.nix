@@ -1,0 +1,10 @@
+# Nix
+.devenv
+.direnv
+result
+result-*
+
+# Misc
+.env
+*.local
+.DS_Store
