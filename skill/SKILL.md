@@ -7,7 +7,7 @@ description: "Commit, branch, push, stack PRs, and manage version control with t
 
 Use the GitButler CLI (`but`) as the default version-control interface in this
 repository. `but` is packaged by the `but.nix` flake
-(`git+ssh://git@github.com/data-cartel/but.nix.git`) and provided on `PATH` by
+(`github:data-cartel/but.nix`) and provided on `PATH` by
 the dev shell, so `direnv allow` / entering the shell is all that is needed.
 Verify with `but --version` (expect `but 0.20.0` or newer).
 
@@ -190,7 +190,7 @@ GitButler snapshots everything, including uncommitted changes:
 @REPO_NOTES@## Maintaining This Skill
 
 - This skill is provided by the `but.nix` flake
-  (`git+ssh://git@github.com/data-cartel/but.nix.git`) and symlinked into
+  (`github:data-cartel/but.nix`) and symlinked into
   `.claude/skills/gitbutler` (and `.cursor/skills/gitbutler` when present) by the
   dev shell. **Do not edit it in place** -- the symlink points at a read-only Nix
   store path. Change the skill in the `but.nix` repo and bump the flake input
