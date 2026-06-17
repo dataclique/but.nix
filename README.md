@@ -21,6 +21,12 @@ sync.
   - `installSkillScript { repoNotes ? "", editors ? [".claude" ".cursor"] }` —
     a shell snippet that symlinks the skill into each editor's
     `skills/gitbutler` directory.
+  - `cursor-cli-json` — a derivation containing `.cursor/cli.json` with
+    GitButler **write** permissions for Cursor agent (commit, amend, stack
+    edits, pull, etc.). Global user config should cover read-only `but` and
+    deny `but push` / `but pr`.
+  - `installCursorCliScript { }` — symlinks that file to `.cursor/cli.json`
+    when the repo does not already have one.
   - `devenvModule { repoNotes ? "", editors ? [".claude" ".cursor"] }` — a
     [devenv](https://devenv.sh) module that adds `but` to `packages` and runs
     the install script on `enterShell`.
@@ -63,14 +69,18 @@ The skill symlink is generated, so gitignore it:
 /ai/skills/gitbutler
 ```
 
+If the repo already has a `.cursor/cli.json`, merge
+`but.lib.<system>.cursorPermissionAllow` into its `permissions.allow` list
+instead of relying on the auto-symlink.
+
 `repoNotes` must be the full markdown block — heading included — ending in a
 blank line. Leave it out for the generic skill.
 
 ## Not using devenv?
 
 Use the pieces directly: add `but.packages.<system>.gitbutler-cli` to your
-shell's packages and run `but.lib.<system>.installSkillScript { ... }` from your
-shell hook.
+shell's packages and run `but.lib.<system>.installSkillScript { ... }` and
+`but.lib.<system>.installCursorCliScript { }` from your shell hook.
 
 ## Bumping GitButler
 
