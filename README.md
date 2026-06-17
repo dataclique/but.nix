@@ -22,8 +22,7 @@ sync.
     a shell snippet that symlinks the skill into each editor's
     `skills/gitbutler` directory.
   - `cursor-cli-json` — a derivation containing `.cursor/cli.json` with
-    granular Cursor agent permissions for `but` (inspect, commit, stack edits,
-    pull, push, pr, etc.).
+    granular Cursor agent permissions for `but` and read-only `git` inspection.
   - `installCursorCliScript { }` — symlinks that file to `.cursor/cli.json`
     when the repo does not already have one.
   - `devenvModule { repoNotes ? "", editors ? [".claude" ".cursor"] }` — a

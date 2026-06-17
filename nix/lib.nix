@@ -31,6 +31,17 @@ let
   # Cursor agent shell permissions installed into consuming repos via
   # `.cursor/cli.json`.
   cursorPermissionAllow = [
+    "Shell(git:diff*)"
+    "Shell(git:log*)"
+    "Shell(git:status*)"
+    "Shell(git:show*)"
+    "Shell(git:fetch*)"
+    "Shell(git:branch*)"
+    "Shell(git:ls-tree*)"
+    "Shell(git:grep*)"
+    "Shell(git:rev-parse*)"
+    "Shell(git:merge-base*)"
+    "Shell(git:blame*)"
     "Shell(but:status*)"
     "Shell(but:diff*)"
     "Shell(but:show*)"
