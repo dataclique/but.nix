@@ -33,6 +33,7 @@
           default = lib.gitbutler-cli;
           gitbutler-cli = lib.gitbutler-cli;
           skill = lib.skill;
+          cursor-cli-json = lib.cursorCliJson;
         };
 
         devShells.default = pkgs.mkShell {

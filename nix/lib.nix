@@ -28,6 +28,71 @@ let
 
   skill = mkSkill { };
 
+  # Cursor agent shell permissions installed into consuming repos via
+  # `.cursor/cli.json`.
+  cursorPermissionAllow = [
+    "Shell(but:status*)"
+    "Shell(but:diff*)"
+    "Shell(but:show*)"
+    "Shell(but:branch list*)"
+    "Shell(but:branch show*)"
+    "Shell(but:pull --check*)"
+    "Shell(but:resolve status*)"
+    "Shell(but:skill check*)"
+    "Shell(but:commit*)"
+    "Shell(but:branch new*)"
+    "Shell(but:branch delete*)"
+    "Shell(but:apply*)"
+    "Shell(but:unapply*)"
+    "Shell(but:amend*)"
+    "Shell(but:rub*)"
+    "Shell(but:squash*)"
+    "Shell(but:move*)"
+    "Shell(but:reword*)"
+    "Shell(but:absorb*)"
+    "Shell(but:uncommit*)"
+    "Shell(but:stage*)"
+    "Shell(but:pick*)"
+    "Shell(but:pull*)"
+    "Shell(but:resolve*)"
+    "Shell(but:clean*)"
+    "Shell(but:setup*)"
+    "Shell(but:undo*)"
+    "Shell(but:redo*)"
+    "Shell(but:oplog*)"
+    "Shell(but:push*)"
+    "Shell(but:pr*)"
+  ];
+
+  cursorCliJson = pkgs.writeTextFile {
+    name = "but-cursor-cli";
+    destination = "/cli.json";
+    text = builtins.toJSON {
+      permissions = {
+        allow = cursorPermissionAllow;
+        deny = [ ];
+      };
+    };
+  };
+
+  # Symlinks `.cursor/cli.json` into the repo when absent.
+  installCursorCliScript =
+    { }:
+    let
+      cliDrv = cursorCliJson;
+      installOne = ''_butnix_install_cursor_cli "${cliDrv}"'';
+    in
+    ''
+      _butnix_install_cursor_cli() {
+        local src="$1" dst=".cursor/cli.json"
+        [ -e "$dst" ] && return 0
+        mkdir -p .cursor
+        ln -sfn "$src" "$dst"
+      }
+      ${installOne}
+      unset -f _butnix_install_cursor_cli
+    '';
+
   # Shell snippet that symlinks the skill derivation into each editor's
   # `skills/gitbutler` directory. Idempotent and safe to run on every shell
   # entry: it only touches a path that is absent or already a symlink, and
@@ -74,7 +139,9 @@ let
     { ... }:
     {
       packages = [ gitbutler-cli ];
-      enterShell = installSkillScript { inherit repoNotes editors; };
+      enterShell =
+        installSkillScript { inherit repoNotes editors; }
+        + installCursorCliScript { };
     };
 in
 {
@@ -82,7 +149,10 @@ in
     gitbutler-cli
     mkSkill
     skill
+    cursorPermissionAllow
+    cursorCliJson
     installSkillScript
+    installCursorCliScript
     devenvModule
     ;
 }
