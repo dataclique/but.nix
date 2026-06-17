@@ -28,10 +28,17 @@ let
 
   skill = mkSkill { };
 
-  # Cursor agent write permissions for GitButler workspaces. Read-only `but` and
-  # `but push` / `but pr` denies live in the global user config
-  # (`ai/cursor.settings.json` in dotconfig).
+  # Cursor agent shell permissions installed into consuming repos via
+  # `.cursor/cli.json`.
   cursorPermissionAllow = [
+    "Shell(but:status*)"
+    "Shell(but:diff*)"
+    "Shell(but:show*)"
+    "Shell(but:branch list*)"
+    "Shell(but:branch show*)"
+    "Shell(but:pull --check*)"
+    "Shell(but:resolve status*)"
+    "Shell(but:skill check*)"
     "Shell(but:commit*)"
     "Shell(but:branch new*)"
     "Shell(but:branch delete*)"
@@ -53,6 +60,8 @@ let
     "Shell(but:undo*)"
     "Shell(but:redo*)"
     "Shell(but:oplog*)"
+    "Shell(but:push*)"
+    "Shell(but:pr*)"
   ];
 
   cursorCliJson = pkgs.writeTextFile {
@@ -66,9 +75,7 @@ let
     };
   };
 
-  # Shell snippet that symlinks cursor/cli.json into the repo when absent.
-  # Global ~/.cursor permissions cover read-only `but` and deny push/pr; this
-  # file adds local write commands for GitButler workspaces.
+  # Symlinks `.cursor/cli.json` into the repo when absent.
   installCursorCliScript =
     { }:
     let
