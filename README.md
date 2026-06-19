@@ -34,7 +34,7 @@ sync.
 Add the input:
 
 ```nix
-inputs.but.url = "github:data-cartel/but.nix";
+inputs.but.url = "github:dataclique/but.nix";
 inputs.but.inputs.nixpkgs.follows = "nixpkgs";
 ```
 
