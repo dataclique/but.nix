@@ -34,11 +34,19 @@
           gitbutler-cli = lib.gitbutler-cli;
           skill = lib.skill;
           cursor-cli-json = lib.cursorCliJson;
+          pr-stack-footer = lib.pr-stack-footer;
+        };
+
+        # `nix flake check` builds pr-stack-footer, whose checkPhase runs its
+        # nushell test suite -- gating the script like compiled code.
+        checks = {
+          pr-stack-footer = lib.pr-stack-footer;
         };
 
         devShells.default = pkgs.mkShell {
           packages = [
             lib.gitbutler-cli
+            lib.pr-stack-footer
             pkgs.nixfmt-rfc-style
           ];
         };

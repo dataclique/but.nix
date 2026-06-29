@@ -8,6 +8,51 @@ let
     inherit (pkgs) lib;
   };
 
+  # Package a scripts/<name>.nu as an executable on PATH, running its
+  # scripts/<name>.test.nu in checkPhase so `nix build`/`nix flake check`
+  # gate the script the same as compiled code. The wrapper puts nushell and
+  # any runtime deps on PATH.
+  mkNuScript =
+    {
+      name,
+      runtimeInputs ? [ ],
+    }:
+    pkgs.stdenvNoCC.mkDerivation {
+      inherit name;
+      src = ../scripts;
+      nativeBuildInputs = [
+        pkgs.makeWrapper
+        pkgs.nushell
+      ];
+      dontConfigure = true;
+      dontBuild = true;
+      doCheck = true;
+      checkPhase = ''
+        runHook preCheck
+        nu ${name}.test.nu
+        runHook postCheck
+      '';
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        install -m755 ${name}.nu $out/bin/${name}
+        wrapProgram $out/bin/${name} \
+          --prefix PATH : ${pkgs.lib.makeBinPath ([ pkgs.nushell ] ++ runtimeInputs)}
+        runHook postInstall
+      '';
+      meta.mainProgram = name;
+    };
+
+  # Rebuild every stacked PR's GitButler navigation footer from the live
+  # `but status`. Reusable across any GitButler-managed repo with `gh` set up.
+  pr-stack-footer = mkNuScript {
+    name = "pr-stack-footer";
+    runtimeInputs = [
+      gitbutler-cli
+      pkgs.gh
+    ];
+  };
+
   # Build the gitbutler agent skill from the shared base, splicing in a
   # repo-specific "## This Repository" section via `repoNotes`. Pass the full
   # markdown block (heading included) ending in a trailing blank line; leave it
@@ -139,14 +184,14 @@ let
     { ... }:
     {
       packages = [ gitbutler-cli ];
-      enterShell =
-        installSkillScript { inherit repoNotes editors; }
-        + installCursorCliScript { };
+      enterShell = installSkillScript { inherit repoNotes editors; } + installCursorCliScript { };
     };
 in
 {
   inherit
     gitbutler-cli
+    mkNuScript
+    pr-stack-footer
     mkSkill
     skill
     cursorPermissionAllow

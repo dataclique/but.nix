@@ -13,8 +13,18 @@ sync.
   Cross-platform (macOS aarch64/x86_64, Linux aarch64/x86_64).
 - `packages.<system>.skill` — the generic gitbutler skill as a derivation
   (`$out/SKILL.md`).
+- `packages.<system>.pr-stack-footer` — a CLI that rebuilds the GitButler
+  stack-navigation footer on every PR in each multi-branch stack from the live
+  `but status` and splices it into the PR bodies via `gh`. GitButler drifts these
+  footers after a rebase or branch add/remove; this recomputes them. Dry-run by
+  default; `--apply` writes. Also exposed as a `checks.<system>` entry, so
+  `nix flake check` runs its nushell test suite.
 - `lib.<system>`:
   - `gitbutler-cli` — the package.
+  - `mkNuScript { name, runtimeInputs ? [] }` — package a `scripts/<name>.nu` as
+    an executable on `PATH`, gating it with `scripts/<name>.test.nu` in
+    `checkPhase`.
+  - `pr-stack-footer` — the footer tool package (see above).
   - `mkSkill { repoNotes ? "" }` — build the skill with a repo-specific
     `## This Repository` section spliced in.
   - `skill` — the generic skill (`mkSkill { }`).
