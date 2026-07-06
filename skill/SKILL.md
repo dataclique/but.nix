@@ -9,7 +9,7 @@ Use the GitButler CLI (`but`) as the default version-control interface in this
 repository. `but` is packaged by the `but.nix` flake
 (`github:dataclique/but.nix`) and provided on `PATH` by
 the dev shell, so `direnv allow` / entering the shell is all that is needed.
-Verify with `but --version` (expect `but 0.20.0` or newer).
+Verify with `but --version` (expect `but 0.21.0` or newer).
 
 GitButler works on **virtual branches** inside a `gitbutler/workspace`
 integration branch: many branches can be applied at once, either side by side
@@ -135,6 +135,12 @@ steps, refreshing IDs from `but status` between them.
 - `but pr new` -- open a PR (or `but pr` defaults to `pr new`). Needs forge
   auth: `but config forge auth` (one-time). `but pr set-draft` / `set-ready` /
   `auto-merge` manage existing PRs.
+- `but land <branch>` -- land a branch **directly onto the target** (e.g.
+  `origin/master`), fast-forwarding when possible or `--no-ff` for a merge
+  commit. It bypasses pull-request review entirely and is not easily reversible,
+  so it needs an even more explicit go-ahead than push: only run it when the user
+  asks to land without a PR. `--yes` skips the confirmation prompt; a branch
+  protected against direct pushes will reject it.
 - After creating a PR, **assign it to the user**:
   `gh pr edit <number> --add-assignee @me` (do this for every PR in a stack).
 - Set good titles/descriptions with `gh pr edit <number> --body-file <file>` --
@@ -195,9 +201,10 @@ GitButler snapshots everything, including uncommitted changes:
   dev shell. **Do not edit it in place** -- the symlink points at a read-only Nix
   store path. Change the skill in the `but.nix` repo and bump the flake input
   here.
-- **Do not run `but skill install` into this repo.** It would clobber the
-  managed symlink. Use `but skill install --global` if you want GitButler's stock
-  skill in your home directory instead.
+- **Do not run `but skill install` or `but agent setup` into this repo.** They
+  would clobber the managed symlink and overwrite agent steering files. Use
+  `but skill install --global` if you want GitButler's stock skill in your home
+  directory instead.
 - `but skill check` compares installed skills against the CLI version and reports
   drift. If command behavior diverges from this doc, fix it in `but.nix`.
 - For full command syntax, use `but <command> --help` or
