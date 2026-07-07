@@ -125,7 +125,7 @@ let
     { }:
     let
       cliDrv = cursorCliJson;
-      installOne = ''_butnix_install_cursor_cli "${cliDrv}"'';
+      installOne = ''_butnix_install_cursor_cli "${cliDrv}/cli.json"'';
     in
     ''
       _butnix_install_cursor_cli() {
