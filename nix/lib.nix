@@ -139,9 +139,12 @@ let
     '';
 
   # Shell snippet that symlinks the skill derivation into each editor's
-  # `skills/gitbutler` directory. Idempotent and safe to run on every shell
-  # entry: it only touches a path that is absent or already a symlink, and
-  # skips editors whose base directory does not exist.
+  # `skills/gitbutler` directory, then makes sure that path is gitignored and not
+  # tracked by git -- a previously-committed copy is dropped from the index with
+  # `git rm --cached` (keeping the working tree). Idempotent and safe to run on
+  # every shell entry: it only touches a path that is absent or already a
+  # symlink, skips editors whose base directory does not exist, and no-ops
+  # outside a git work tree.
   installSkillScript =
     {
       repoNotes ? "",
@@ -155,6 +158,20 @@ let
       installOne = base: ''_butnix_install_skill ${lib.escapeShellArg base} "${skillDrv}"'';
     in
     ''
+      _butnix_gitignore_untrack() {
+        local path="$1"
+        # Only touch git state inside a work tree.
+        [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = true ] || return 0
+        # Drop a previously-committed copy from the index, keeping the working tree.
+        if git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+          git rm -r --cached --quiet -- "$path"
+        fi
+        # Ensure the installed path is ignored (exact-line, idempotent).
+        if ! { [ -f .gitignore ] && grep -qxF "$path" .gitignore; }; then
+          [ -s .gitignore ] && [ -n "$(tail -c1 .gitignore)" ] && printf '\n' >>.gitignore
+          printf '%s\n' "$path" >>.gitignore
+        fi
+      }
       _butnix_install_skill() {
         local base="$1" skill="$2"
         [ -d "$base" ] || return 0
@@ -165,9 +182,10 @@ let
         else
           echo "but.nix: $link is a real path, not a symlink; leaving it alone." >&2
         fi
+        _butnix_gitignore_untrack "$link"
       }
       ${lib.concatMapStringsSep "\n" installOne editors}
-      unset -f _butnix_install_skill
+      unset -f _butnix_install_skill _butnix_gitignore_untrack
     '';
 
   # devenv module that drops `but` on PATH and installs the skill on shell
