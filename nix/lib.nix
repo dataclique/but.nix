@@ -151,17 +151,20 @@ let
 
         if [ -L "$dst" ] && _butnix_cursor_cli_has_required "$dst"; then
           local tmp
-          tmp="$(mktemp)"
-          cp -L "$dst" "$tmp"
-          rm "$dst"
-          mv "$tmp" "$dst"
+          tmp="$(mktemp ".cursor/cli.XXXXXX")" || return 1
+          if cp -L "$dst" "$tmp"; then
+            mv -f "$tmp" "$dst"
+          else
+            rm -f "$tmp"
+            return 1
+          fi
           return 0
         fi
 
         if [ -e "$dst" ]; then
           local tmp
-          tmp="$(mktemp)"
-          "$jq" -s '
+          tmp="$(mktemp ".cursor/cli.XXXXXX")" || return 1
+          if "$jq" -s '
             .[0] as $existing | .[1] as $required |
             $existing * {
               permissions: {
@@ -169,9 +172,12 @@ let
                 deny: ($existing.permissions.deny // [])
               }
             }
-          ' "$dst" "$src" > "$tmp"
-          rm -f "$dst"
-          mv "$tmp" "$dst"
+          ' "$dst" "$src" > "$tmp"; then
+            mv -f "$tmp" "$dst"
+          else
+            rm -f "$tmp"
+            return 1
+          fi
           return 0
         fi
 
