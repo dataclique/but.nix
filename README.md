@@ -33,8 +33,9 @@ sync.
     `skills/gitbutler` directory.
   - `cursor-cli-json` — a derivation containing `.cursor/cli.json` with
     granular Cursor agent permissions for `but`.
-  - `installCursorCliScript { }` — symlinks that file to `.cursor/cli.json`
-    when the repo does not already have one.
+  - `installCursorCliScript { }` — copies that file to `.cursor/cli.json`
+    when absent, merges missing `but` permissions into an existing file, and
+    leaves a real file alone when it is already up to date.
   - `devenvModule { repoNotes ? "", editors ? [".claude" ".cursor"] }` — a
     [devenv](https://devenv.sh) module that adds `but` to `packages` and runs
     the install script on `enterShell`.
@@ -77,9 +78,9 @@ The skill symlink is generated, so gitignore it:
 /ai/skills/gitbutler
 ```
 
-If the repo already has a `.cursor/cli.json`, merge
-`but.lib.<system>.cursorPermissionAllow` into its `permissions.allow` list
-instead of relying on the auto-symlink.
+If the repo already has a `.cursor/cli.json` with extra permissions, the
+install script merges any missing entries from
+`but.lib.<system>.cursorPermissionAllow` and otherwise leaves it alone.
 
 `repoNotes` must be the full markdown block — heading included — ending in a
 blank line. Leave it out for the generic skill.
