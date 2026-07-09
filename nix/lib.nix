@@ -120,22 +120,71 @@ let
     };
   };
 
-  # Symlinks `.cursor/cli.json` into the repo when absent.
+  # Copies `.cursor/cli.json` into the repo when absent or missing required
+  # permissions. Leaves an existing real file alone when it already contains
+  # every entry from `cursorPermissionAllow`; materializes symlinks into real
+  # files without changing their content when they are up to date.
   installCursorCliScript =
     { }:
     let
       cliDrv = cursorCliJson;
+      jq = "${pkgs.jq}/bin/jq";
       installOne = ''_butnix_install_cursor_cli "${cliDrv}/cli.json"'';
     in
     ''
       _butnix_install_cursor_cli() {
         local src="$1" dst=".cursor/cli.json"
-        [ -e "$dst" ] && return 0
+        local jq="${jq}"
         mkdir -p .cursor
-        ln -sfn "$src" "$dst"
+
+        _butnix_cursor_cli_has_required() {
+          "$jq" -e --slurpfile required "$src" '
+            (.permissions.allow // []) as $allow |
+            ($required[0].permissions.allow // []) |
+            all(. as $r | $allow | index($r) != null)
+          ' "$1" >/dev/null 2>&1
+        }
+
+        if [ -f "$dst" ] && ! [ -L "$dst" ] && _butnix_cursor_cli_has_required "$dst"; then
+          return 0
+        fi
+
+        if [ -L "$dst" ] && _butnix_cursor_cli_has_required "$dst"; then
+          local tmp
+          tmp="$(mktemp ".cursor/cli.XXXXXX")" || return 1
+          if cp -L "$dst" "$tmp"; then
+            mv -f "$tmp" "$dst"
+          else
+            rm -f "$tmp"
+            return 1
+          fi
+          return 0
+        fi
+
+        if [ -e "$dst" ]; then
+          local tmp
+          tmp="$(mktemp ".cursor/cli.XXXXXX")" || return 1
+          if "$jq" -s '
+            .[0] as $existing | .[1] as $required |
+            $existing * {
+              permissions: {
+                allow: ((($existing.permissions.allow // []) + ($required.permissions.allow // [])) | unique),
+                deny: ($existing.permissions.deny // [])
+              }
+            }
+          ' "$dst" "$src" > "$tmp"; then
+            mv -f "$tmp" "$dst"
+          else
+            rm -f "$tmp"
+            return 1
+          fi
+          return 0
+        fi
+
+        cp "$src" "$dst"
       }
       ${installOne}
-      unset -f _butnix_install_cursor_cli
+      unset -f _butnix_install_cursor_cli _butnix_cursor_cli_has_required
     '';
 
   # Shell snippet that symlinks the skill derivation into each editor's
