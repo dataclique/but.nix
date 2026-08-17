@@ -136,7 +136,7 @@ def apply-footer [prs: list, pr: int]: nothing -> record {
 }
 
 def main [--apply]: nothing -> any {
-  let jobs = (footer-jobs (^but status --format json | from json | stacks-with-prs))
+  let jobs = (footer-jobs (^but status --json | from json | stacks-with-prs))
 
   if not $apply {
     $jobs | each {|job|
