@@ -4,7 +4,7 @@
 # failed assertion. Only the pure footer functions are exercised; the
 # `but`/`gh` I/O in `main` is not invoked.
 
-use std assert
+use std/assert
 use ./pr-stack-footer.nu *
 
 # build-footer numbers the stack base-first (position 1 = bottom), lists
