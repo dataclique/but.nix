@@ -65,11 +65,16 @@ let
       base = builtins.readFile ../skill/SKILL.md;
       text = builtins.replaceStrings [ "@REPO_NOTES@" ] [ repoNotes ] base;
     in
-    pkgs.writeTextFile {
-      name = "gitbutler-skill";
-      destination = "/SKILL.md";
-      inherit text;
-    };
+    pkgs.runCommand "gitbutler-skill"
+      {
+        inherit text;
+        passAsFile = [ "text" ];
+      }
+      ''
+        mkdir -p "$out"
+        cp "$textPath" "$out/SKILL.md"
+        cp -r ${../skill/references} "$out/references"
+      '';
 
   skill = mkSkill { };
 
