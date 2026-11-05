@@ -4,6 +4,9 @@
 result
 result-*
 
+# Agent scratch artifacts
+/.tmp/
+
 # Misc
 .env
 *.local
