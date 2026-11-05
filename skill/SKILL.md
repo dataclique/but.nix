@@ -224,9 +224,11 @@ For "get latest from main", "update/sync this workspace", "rebase onto main", or
 "pull main":
 
 1. `but pull` — one command; no preflight needed. Its output reports the
-   resulting state, and `but undo` reverts it. Uncommitted changes that conflict
-   with the update get conflict markers and show as `{conflicted}`; resolve them
-   as in Conflicts in uncommitted files.
+   resulting state. **but.nix rollback caveat:** `but undo` does not restore
+   branches checked out in linked worktrees, even when pull ran from the main
+   checkout. See Work in a linked worktree and the undo preconditions in Notes.
+   Uncommitted changes that conflict with the update get conflict markers and
+   show as `{conflicted}`; resolve them as in Conflicts in uncommitted files.
 2. If commits come back conflicted, resolve them with the
    `but resolve conflicts <branch>` and `but resolve apply` loop in Resolve
    conflicted commits, one branch at a time. When `HEAD` is
@@ -497,7 +499,8 @@ Work through one branch at a time, oldest commit first — the loop is:
    a commit with unresolved conflicts left stays `{conflicted}` with exactly
    those conflicts.
 
-A wrong resolution is reverted with `but undo`.
+For a wrong resolution, use `but undo` only under the recovery preconditions in
+Notes; it does not restore branches checked out in linked worktrees.
 
 `but resolve <commit-id> --ai` resolves a whole commit with the configured AI
 model in one shot, and `but resolve --ai` without a commit resolves every
@@ -565,8 +568,15 @@ with that state; it then shows as an ordinary uncommitted change.
   `but config target origin/main` (with the default branch's name), which
   creates `main` to track it if missing. Never `git branch --set-upstream-to` on
   your own branch, which makes that branch the target.
-- `but undo` restores the whole snapshot, so uncommitted edits made after the
-  undone operation are lost (`but redo` brings them back). Commit them first.
+- **but.nix recovery clarification:** `but undo` targets the latest recorded
+  operation, not an earlier mistake selected by intent. Coordinate exclusive
+  access with other writers and preserve later uncommitted edits outside
+  GitButler's managed snapshots before undoing. Do not make a protective commit
+  first: that commit becomes the undo target. Undo only while the intended
+  operation remains the latest recorded operation, then reapply the preserved
+  edits. Snapshot restoration discards later uncommitted edits and does not
+  restore branches checked out in linked worktrees; use the linked-worktree
+  recovery guidance for those branches.
 - Read-only git inspection (`git log`, `git blame`, `git show --stat`) is
   allowed.
 - If `but` prints an `AGENT ACTION REQUIRED` skill warning, run the suggested
