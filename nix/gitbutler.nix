@@ -1,26 +1,26 @@
 { pkgs, lib }:
 
 let
-  version = "0.22.3";
-  build = "3234";
+  version = "0.23.2";
+  build = "3329";
   baseUrl = "https://releases.gitbutler.com/releases/release/${version}-${build}";
 
   sources = {
     aarch64-darwin = {
       url = "${baseUrl}/macos/aarch64/GitButler.app.tar.gz";
-      hash = "sha256-7fD2gMEC/4b67h2RnqKmFm/L5uOpiYZwbJGjju1mL3Q=";
+      hash = "sha256-+FmDCF2aJZsPlFNWzXUg5g5XsAhSZJjAy4PzmzrYL5A=";
     };
     x86_64-darwin = {
       url = "${baseUrl}/macos/x86_64/GitButler.app.tar.gz";
-      hash = "sha256-myIGD7DdEaTZ5B7j2TxnsMJJhrgkBV+5EHNoB1xcSzc=";
+      hash = "sha256-V7wAvUL+nEkf80eXzegulqOa2dO+44rhC8QsrDmGhzE=";
     };
     x86_64-linux = {
       url = "${baseUrl}/linux/x86_64/GitButler_${version}_amd64.deb";
-      hash = "sha256-RYP6aVS9myO8bVvna3Yn65SnE8r1ztC5TBtWPujElzw=";
+      hash = "sha256-eQ3s81vUarANiuk0FwblFrpVASBmtZx0gEXXZVmstXs=";
     };
     aarch64-linux = {
       url = "${baseUrl}/linux/aarch64/GitButler_${version}_arm64.deb";
-      hash = "sha256-ZPRUtQfXLGbshOG8zauMJsycFDcBvesrJ3O2bzFSMKw=";
+      hash = "sha256-MLvV6XF6AO2cmQAWY9d9WMoDFBvSzMVJsEwVL4oIEv4=";
     };
   };
 
